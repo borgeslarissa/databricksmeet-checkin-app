@@ -1,91 +1,113 @@
-# Meet Check-in App
+# Secure Attendance & Access Control (Databricks)
 
-Aplicação em Streamlit rodando no Databricks para controle de presença em reuniões via link dinâmico.
+Aplicação em Streamlit rodando no Databricks para controle seguro de presença em reuniões via link dinâmico com validação de acesso.
+
+---
 
 ## Funcionalidades
 
 * Check-in via link único (`token`)
 * Validação de CPF
 * Controle de acesso por horário (5 min antes até 1h depois)
-* Expiração e desativação de links
-* Registro em tabela Delta (Databricks)
+* Expiração automática e desativação manual de links
+* Registro em Delta Tables (Databricks)
 * Redirecionamento automático para Google Meet
-* Prevenção de acessos fora da janela permitida
+* Bloqueio de acessos fora da janela permitida
 
-## Analytics de Presença
+---
 
-O projeto inclui camadas analíticas prontas para monitoramento:
+## Camada Analítica
 
-* **vw_presenca** → base consolidada de presença com atraso e validação
-* **vw_indicadores_reuniao** → métricas por reunião
-* **vw_indicadores_gerais** → visão consolidada
-* **vw_duplicidade** → controle de múltiplos check-ins
+O projeto inclui uma camada de analytics pronta para uso:
 
-### Métricas disponíveis:
+### Views disponíveis
+
+* `vw_presenca` → base consolidada com atraso e validação de presença
+* `vw_indicadores_reuniao` → métricas por reunião
+* `vw_indicadores_gerais` → visão consolidada
+* `vw_duplicidade` → controle de múltiplos check-ins
+
+### Métricas geradas
 
 * Total de check-ins
 * Participantes únicos
-* Taxa de presença válida
+* Taxa de presença válida (%)
 * Atraso médio (min)
 * Primeiro e último acesso
 * Duplicidade de CPF
+
+---
 
 ## Arquitetura
 
 * **Frontend:** Streamlit (Databricks Apps)
 * **Backend:** Databricks SQL Warehouse
 * **Storage:** Delta Tables
-* **Autenticação:** Token via query param (`hash_link`)
+* **Segurança:** Token via query param (`hash_link`)
+
+---
 
 ## Estrutura do Projeto
 
 ```
 .
-├── app.py                # Aplicação principal
-├── requirements.txt     # Dependências
-├── sql/
+├── app.py
+├── requirements.txt
+├── setup.sql/
 │   ├── 01_create_tables.sql
 │   ├── 02_seed_data.sql
-│   ├── 03_views.sql     # Camada analítica
-├── runbook.md           # Guia operacional
+│   ├── 03_views.sql
+├── runbook.md
 ```
 
-## Como executar
+---
 
-1. Criar as tabelas e views:
+## Quick Start
+
+1. Execute o setup completo:
 
 ```sql
--- executar arquivos em /sql
+-- executar setup/setup.sql
 ```
 
-2. Deploy no Databricks Apps
+2. Faça o deploy do app no Databricks Apps
 
-3. Acessar via:
+3. Gere um link de acesso:
 
+```sql
+SELECT CONCAT('<app-url>?token=', hash_link)
+FROM apost_meetings
 ```
-https://<app-url>/?token=<hash_link>
-```
+
+4. Acesse o link no navegador e realize o check-in
+
 
 ## Segurança
 
-* Links controlados por `hash_link`
-* Possibilidade de expiração (`expira_em`)
+* Links protegidos por `hash_link`
+* Expiração configurável (`expira_em`)
 * Desativação manual (`ativo = false`)
-* Validação dupla de horário (frontend + ação)
+* Validação dupla de horário (UI + backend)
 
-## Casos de uso
+---
 
-* Monitoramento de presença em reuniões clínicas
+## Casos de Uso
+
+* Monitoramento de presença em contextos clínicos
 * Controle de participação em grupos terapêuticos
-* Gestão de presença em reuniões corporativas
+* Gestão de reuniões corporativas
 * Acompanhamento de engajamento em sessões online
 
-## Próximos passos
+---
+
+## Roadmap
 
 * Dashboard de presença (Databricks SQL / Power BI)
 * Bloqueio de duplicidade em tempo real
 * Geração automática de tokens
+* Interface administrativa para criação de reuniões
 
+---
 
 ## Autora
 
